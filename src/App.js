@@ -68,8 +68,8 @@ function App() {
               <div className="text-center bg-light p-3 pb-0 border border-3 w-auto mt-3">
                 <h1>ポケモン図鑑</h1>
                 <input type="number" onChange={(e) => setId(e.target.value)}/>番
-                <button className="btn-sm btn-primary ms-2"
-                        onClick={fetchData}>検索
+                <button className="btn btn-sm btn-primary ms-2"
+                        onClick={fetchData} disabled={isLoading}>検索
                 </button>
                 <h3 className="text-danger mt-2">{error}</h3>
                 <div className="mt-3">
