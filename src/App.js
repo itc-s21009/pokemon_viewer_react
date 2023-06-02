@@ -7,14 +7,18 @@ function App() {
   const [description, setDescription] = useState([])
   const [genus, setGenus] = useState([])
   const [error, setError] = useState('')
+  const [isLoading, setLoading] = useState(false)
   const updateSource = (data) => setSource(data["sprites"]["front_default"])
   const updateSpecies = (data) => {
-    window.fetch(data['species']['url'])
+    return window.fetch(data['species']['url'])
         .then(r => r.json())
         .then(s => {
-          updatePokeName(s)
-          updateDescription(s)
-          updateGenus(s)
+          const name = getPokeName(s)
+          const description = getDescription(s)
+          const genus = getGenus(s)
+          setName(name)
+          setDescription(description.split('\n'))
+          setGenus(genus)
         })
   }
   const findJapanese = (langList) => {
@@ -24,29 +28,34 @@ function App() {
       }
     }
   }
-  const updatePokeName = (species) => {
+  const getPokeName = (species) => {
     const names = species['names']
-    const name = findJapanese(names)['name']
-    setName(name)
+    return findJapanese(names)['name']
   }
-  const updateDescription = (species) => {
+  const getDescription = (species) => {
     const texts = species['flavor_text_entries']
-    const text = findJapanese(texts)['flavor_text']
-    setDescription(text.split('\n'))
+    return findJapanese(texts)['flavor_text']
   }
-  const updateGenus = (species) => {
+  const getGenus = (species) => {
     const genera = species['genera']
-    const genus = findJapanese(genera)['genus']
-    setGenus(genus)
+    return findJapanese(genera)['genus']
   }
-  const fetchData = () => window.fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
-      .then(r => r.json())
-      .then(d => {
-        updateSource(d)
-        updateSpecies(d)
-        setError('')
-      })
-      .catch(e => setError(`${id}番のポケモンは存在しません`))
+  const fetchData = () => {
+    setLoading(true)
+    window.fetch(`https://pokeapi.co/api/v2/pokemon/${id}`)
+        .then(r => r.json())
+        .then(d => {
+          updateSource(d)
+          updateSpecies(d).then(() => {
+            setError('')
+            setLoading(false)
+          })
+        })
+        .catch(e => {
+          setError(`${id}番のポケモンは存在しません`)
+          setLoading(false)
+        })
+  }
   useEffect(() => {
     fetchData()
   }, [])
@@ -73,6 +82,7 @@ function App() {
                     </div>
                   </div>
                 </div>
+                <h5 className="text-muted" hidden={!isLoading}>Loading...</h5>
                 <p className="text-end">画像提供: <a href="https://pokeapi.co/">PokeAPI.co</a></p>
               </div>
             </div>
